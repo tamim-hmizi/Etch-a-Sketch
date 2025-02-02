@@ -1,54 +1,52 @@
 const container = document.querySelector(".container");
-const btn = document.querySelector("button");
+const btn = document.querySelector("#newGrid");
 
-function coll(row, x) {
-  for (let i = 0; i < x; i++) {
-    const coll = document.createElement("div");
-    coll.className = "coll";
-    coll.style.cssText = "filter: brightness(100%);";
-    row.appendChild(coll);
+let isMouseDown = false;
+
+function createGrid(size) {
+  container.innerHTML = "";
+  container.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
+  container.style.gridTemplateRows = `repeat(${size}, 1fr)`;
+
+  for (let i = 0; i < size * size; i++) {
+    const cell = document.createElement("div");
+    cell.classList.add("grid-item");
+    cell.style.filter = "brightness(100%)";
+
+    cell.addEventListener("mousedown", () => {
+      isMouseDown = true;
+      changeColor(cell);
+    });
+
+    cell.addEventListener("mousemove", () => {
+      if (isMouseDown) changeColor(cell);
+    });
+
+    container.appendChild(cell);
   }
-}
 
-function row(x) {
-  for (let i = 0; i < x; i++) {
-    const row = document.createElement("div");
-    row.className = "row";
-    coll(row, x);
-    container.appendChild(row);
-  }
-}
-
-function hover() {
-  const divs = document.querySelectorAll(".coll");
-  divs.forEach((div) =>
-    div.addEventListener("mouseover", () => {
-      div.style.backgroundColor = randomColor();
-      let value = div.style.filter.match(/(\d+)/);
-      value[0] -= 10;
-      div.style.filter = "brightness(" + value[0] + "%)";
-    })
-  );
-}
-
-function grid() {
-  btn.addEventListener("click", () => {
-    let choise = 0;
-    const divs = document.querySelectorAll(".row");
-    divs.forEach((div) => div.parentNode.removeChild(div));
-    while (choise <= 0 || choise > 100) {
-      choise = parseInt(prompt("choose a nbr between 0 and 100 : "));
-    }
-    row(choise);
-    hover();
+  document.addEventListener("mouseup", () => {
+    isMouseDown = false;
   });
 }
 
-function randomColor() {
-  let randomColor = Math.floor(Math.random() * 16777215).toString(16);
-  return "#" + randomColor;
+function changeColor(cell) {
+  cell.style.backgroundColor = randomColor();
+  let brightness = parseInt(cell.style.filter.match(/\d+/)[0]) - 10;
+  cell.style.filter = `brightness(${brightness}%)`;
 }
 
-row(16);
-hover();
-grid();
+function randomColor() {
+  return `hsl(${Math.random() * 360}, 100%, 50%)`;
+}
+
+btn.addEventListener("click", () => {
+  let size;
+  do {
+    size = parseInt(prompt("Choose a number between 1 and 100:"));
+  } while (isNaN(size) || size < 1 || size > 100);
+
+  createGrid(size);
+});
+
+createGrid(16);
